@@ -1,0 +1,11 @@
+{
+	"namespace": {
+		"scope": "cpp",
+		"prefix": "@name",
+		"body": [
+			"namespace asynccurl{",
+			"$1",
+			"}"
+		]
+	}
+}
