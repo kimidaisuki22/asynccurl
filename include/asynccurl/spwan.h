@@ -4,7 +4,7 @@
 #include <memory>
 namespace asynccurl {
 
-inline void spawn(Executor &Executor, std::shared_ptr<Request> request){
-
+inline void spawn(Executor &executor, auto &resumable) {
+  executor.add_task([&resumable] { resumable.resume(); });
 }
-}
+} // namespace asynccurl

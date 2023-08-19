@@ -3,10 +3,12 @@ set(CMAKE_CXX_STANDARD 20)
 
 project ("asynccurl" LANGUAGES CXX)
 message(STATUS "using ${CMAKE_CXX_COMPILER_ID}")
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+# if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_definitions(-DASIO_HAS_STD_COROUTINE -DASIO_HAS_CO_AWAIT)
-endif()
+# endif()
 
+add_compile_options(-fsanitize=address)
+add_link_options(-fsanitize=address)
 
 add_library(asynccurl)
 

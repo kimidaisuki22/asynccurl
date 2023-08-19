@@ -7,9 +7,10 @@ namespace asynccurl {
 class Write_buffer {
 public:
   virtual size_t write(char *buffer, size_t size) = 0;
+  virtual ~Write_buffer() = default;
 };
 
-class Write_string : Write_buffer {
+class Write_string : public Write_buffer {
 public:
   size_t write(char *buffer, size_t size) override {
     buffer_.append(buffer, buffer + size);
@@ -17,7 +18,7 @@ public:
   }
   std::string buffer_;
 };
-class Write_file : Write_buffer {
+class Write_file : public Write_buffer {
 public:
   size_t write(char *buffer, size_t size) override {
     file_.write(buffer, size);

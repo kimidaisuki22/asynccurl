@@ -1,6 +1,7 @@
 #pragma once
 #include <curl/curl.h>
 #include <curl/easy.h>
+#include <functional>
 #include <string>
 namespace asynccurl {
 class Request {
@@ -32,4 +33,6 @@ private:
   }
   CURL *handle_;
 };
+
+
 } // namespace asynccurl
