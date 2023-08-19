@@ -16,12 +16,6 @@ find_package(asio CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
-
-
-
-
-
-
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(asynccurl PUBLIC
 asio::asio
@@ -29,6 +23,17 @@ nlohmann_json::nlohmann_json
 fmt::fmt
 )
 
+if(${PROJECT_NAME} STREQUAL ${CMAKE_PROJECT_NAME})
+set(ENABLE_ASYNCCURL_TEST ON)
+set(ENABLE_ASYNCCURL_EXAMPLE ON)
+endif()
+
+if(${ENABLE_ASYNCCURL_TEST})
+# add_subdirectory(test)
+endif()
+if(${ENABLE_ASYNCCURL_EXAMPLE})
+add_subdirectory(example)
+endif()
 
 
 include (GNUInstallDirs)
