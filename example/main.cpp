@@ -12,11 +12,11 @@ int main() {
   SPDLOG_INFO("test block version");
   basic.execute_with_block();
 
-  const int loop_total = 20;
+  const int loop_total = 4;
   spdlog::stopwatch block_stopwatch;
   for (int i = 0; i < loop_total; i++) {
     SPDLOG_INFO("loop {}", i);
-    basic.execute_with_block();
+    basic.execute_with_block(); // reuse connection here.
   }
   SPDLOG_INFO("simple version: {}", block_stopwatch);
 
@@ -27,7 +27,7 @@ int main() {
   for (int i = 0; i < loop_total; i++) {
     auto res = std::make_shared<asynccurl::Request>(url);
     requests.push_back(res);
-    exec.add_handle(res->build_handle());
+    exec.add_handle(*res);
   }
 
   exec.run();
