@@ -55,6 +55,9 @@ Task<std::vector<std::string>> fetch_lots(std::vector<std::string> urls,
     i++;
   }
   SPDLOG_INFO("We fetched {} urls", results.size());
+  for (auto u : results) {
+    SPDLOG_DEBUG("url: {}", u);
+  }
   co_return results;
 }
 int main() {
@@ -76,11 +79,13 @@ int main() {
 
   auto result = fetch(url, exec);
   asynccurl::spawn(exec, result);
-//   auto future = is_right();
-//   asynccurl::spawn(exec, future);
-  auto lots =
-      fetch_lots({"https://www.bing.com", "https://www.bing.com","https://www.bing.com","https://www.bing.com"}, exec);
+  //   auto future = is_right();
+  //   asynccurl::spawn(exec, future);
+  std::vector<std::string> urls(10, url);
+  auto lots = fetch_lots(urls, exec);
+  auto lots2 = fetch_lots(urls, exec);
   asynccurl::spawn(exec, lots);
+  asynccurl::spawn(exec, lots2);
 
   SPDLOG_INFO("test async version");
 

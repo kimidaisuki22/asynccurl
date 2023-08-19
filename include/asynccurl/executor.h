@@ -43,11 +43,9 @@ public:
         function_queue_.pop_front();
         task++;
       }
-      SPDLOG_INFO("running state transfer {} task {}", transfers_running, task);
-      if (task == 0 && transfers_running == 0) {
-        break;
-      }
-    } while (transfers_running || task || 1);
+      SPDLOG_DEBUG("running state transfer {} task {}", transfers_running,
+                   task);
+    } while (transfers_running || task);
   }
   void task_info(CURLM *handle) {
     CURLMsg *info{};
