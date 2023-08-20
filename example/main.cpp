@@ -1,4 +1,5 @@
 #include "asynccurl/awaitable_request.h"
+#include "asynccurl/behave.h"
 #include "asynccurl/request.h"
 #include "asynccurl/request_slot.h"
 #include "asynccurl/spwan.h"
@@ -37,6 +38,11 @@ Task<std::string> fetch(std::string url, asynccurl::Executor &executor) {
   auto buffer = std::make_shared<asynccurl::Write_string>();
   asynccurl::Request_slot req{url};
   req.set_write_buffer(buffer);
+  static int i{};
+  i++;
+  if (i % 2 == 0) {
+    asynccurl::follow_redirect(req, true);
+  }
 
   co_await asynccurl::Awaitable_request{req, executor};
   SPDLOG_INFO("coroutine resume:{}", buffer->buffer_);
