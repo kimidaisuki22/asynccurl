@@ -1,8 +1,5 @@
 #pragma once
 #include "asynccurl/request.h"
-#include <asio.hpp>
-#include <asio/awaitable.hpp>
-#include <asio/io_context.hpp>
 #include <curl/curl.h>
 #include <curl/easy.h>
 #include <curl/multi.h>
@@ -76,10 +73,6 @@ public:
 
 private:
   CURLM *multi_handle_{};
-  asio::io_context multi_context_;
-  asio::io_context request_context_;
-  asio::io_context::work multi_work_{multi_context_};
-  asio::io_context::work request_work_{request_context_};
 
   std::deque<std::function<void()>> function_queue_;
   std::deque<std::function<void()>> back_queue_;

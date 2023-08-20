@@ -75,7 +75,6 @@ int main() {
     basic.execute_with_block(); // reuse connection here.
   }
   SPDLOG_INFO("simple version: {}", block_stopwatch);
-  asio::io_context ctx;
 
   auto result = fetch(url, exec);
   asynccurl::spawn(exec, result);

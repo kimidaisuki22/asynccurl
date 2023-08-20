@@ -17,14 +17,12 @@ target_sources(asynccurl PUBLIC include/asynccurl/executor.h)
 
 target_include_directories(asynccurl PUBLIC include)
 
-find_package(asio CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
  find_package(CURL CONFIG REQUIRED)
  find_package(nlohmann_json CONFIG REQUIRED)
 
 target_link_libraries(asynccurl PUBLIC
-asio::asio
 nlohmann_json::nlohmann_json
 fmt::fmt
 spdlog::spdlog
