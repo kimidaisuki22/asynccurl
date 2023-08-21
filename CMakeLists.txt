@@ -12,7 +12,7 @@ message(STATUS "using ${CMAKE_CXX_COMPILER_ID}")
 # add_compile_options(-fsanitize=address)
 # add_link_options(-fsanitize=address)
 
-add_library(asynccurl)
+add_library(asynccurl STATIC)
 
 target_sources(asynccurl PRIVATE src/executor.cpp)
 
