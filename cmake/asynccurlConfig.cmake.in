@@ -1,4 +1,5 @@
 @PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
 find_dependency(fmt)
 find_dependency(spdlog)
 find_dependency(CURL)
