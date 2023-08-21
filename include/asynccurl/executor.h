@@ -25,7 +25,7 @@ public:
     int transfers_running{};
     int task;
     do {
-      curl_multi_wait(multi_handle_, NULL, 0, 100, NULL);
+      curl_multi_wait(multi_handle_, NULL, 0, 1000, NULL);
       curl_multi_perform(multi_handle_, &transfers_running);
       task_info(multi_handle_);
       task = {};
@@ -79,6 +79,8 @@ public:
     SPDLOG_DEBUG("adding new task to executor");
     std::unique_lock lock{queue_mutex_};
     back_queue_.push_back(task);
+
+    curl_multi_wakeup(multi_handle_);
     wait_new_task_.notify_one();
     SPDLOG_DEBUG("wake up send to executor");
   }
