@@ -1,7 +1,7 @@
 ﻿cmake_minimum_required (VERSION 3.24)
 set(CMAKE_CXX_STANDARD 20)
 
-project ("asynccurl" LANGUAGES CXX)
+project ("asynccurl" VERSION 0.0.1 LANGUAGES CXX)
 message(STATUS "using ${CMAKE_CXX_COMPILER_ID}")
 # if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_definitions(-DASIO_HAS_STD_COROUTINE -DASIO_HAS_CO_AWAIT)
@@ -51,4 +51,12 @@ install(TARGETS asynccurl
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   )
 
+  set(CPACK_SOURCE_GENERATOR "TGZ;TZST;ZIP;7Z")
+  set(CPACK_SOURCE_IGNORE_FILES
+    "/.git/"
+    "/.gitignore$"
+    "/.cache/"
+    "/.vscode/"
+    "/build/"
+  )
 include(CPack)
