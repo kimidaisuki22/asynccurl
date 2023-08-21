@@ -18,8 +18,6 @@
 #include <thread>
 #include <vector>
 
-
-
 // Task<void> is_right() {
 //   SPDLOG_INFO("That's all right");
 //   co_return;
@@ -36,7 +34,7 @@ Task<std::string> fetch(std::string url, asynccurl::Executor &executor) {
   }
 
   co_await asynccurl::Awaitable_request{req, executor};
-  SPDLOG_INFO("coroutine resume:{}", buffer->buffer_);
+  SPDLOG_TRACE("coroutine resume:{}", buffer->buffer_);
 
   co_return buffer->buffer_;
 }
@@ -51,9 +49,9 @@ Task<std::vector<std::string>> fetch_lots(std::vector<std::string> urls,
     results.push_back(r);
     i++;
   }
-  SPDLOG_INFO("We fetched {} urls", results.size());
+  SPDLOG_INFO("We fetched {} urls, fetch_lots finished.", results.size());
   for (auto u : results) {
-    SPDLOG_DEBUG("url: {}", u);
+    SPDLOG_TRACE("url: {}", u);
   }
   co_return results;
 }
@@ -78,7 +76,7 @@ int main() {
   asynccurl::spawn(exec, result);
   //   auto future = is_right();
   //   asynccurl::spawn(exec, future);
-  std::vector<std::string> urls(10, url);
+  std::vector<std::string> urls(loop_total, url);
   auto lots = fetch_lots(urls, exec);
   auto lots2 = fetch_lots(urls, exec);
   asynccurl::spawn(exec, lots);
@@ -106,17 +104,20 @@ int main() {
     while (true) {
       std::barrier barrier{2};
       auto tasks = fetch_lots(urls, exec);
-      tasks.set_on_finished([&barrier] { barrier.arrive_and_drop(); });
+      tasks.set_on_finished([&barrier] {
+        SPDLOG_INFO("looping task finished.");
+        barrier.arrive_and_drop();
+      });
       asynccurl::spawn(exec, tasks);
       barrier.arrive_and_wait();
-      SPDLOG_INFO("Looping: {} finished",loop_count++);
-      if(stoped){
+      SPDLOG_INFO("Looping: {} finished", loop_count++);
+      if (stoped) {
         exec.request_stop();
         SPDLOG_INFO("request stoped");
         break;
       }
       std::this_thread::sleep_for(std::chrono::seconds{3});
-      SPDLOG_INFO("start looping {}",loop_count);
+      SPDLOG_INFO("start looping {}", loop_count);
     }
   }};
   SPDLOG_INFO("start run executor.");
