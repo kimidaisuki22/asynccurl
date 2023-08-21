@@ -117,18 +117,21 @@ int main() {
     }
   }};
   std::thread t{[&] {
+    int loop_count{};
     while (true) {
       std::barrier barrier{2};
       auto tasks = fetch_lots(urls, exec);
       tasks.set_on_finished([&barrier] { barrier.arrive_and_drop(); });
       asynccurl::spawn(exec, tasks);
       barrier.arrive_and_wait();
+      SPDLOG_INFO("Looping: {} finished",loop_count++);
       if(stoped){
         exec.request_stop();
         SPDLOG_INFO("request stoped");
         break;
       }
       std::this_thread::sleep_for(std::chrono::seconds{10});
+      SPDLOG_INFO("start looping {}",loop_count);
     }
   }};
   SPDLOG_INFO("start run executor.");
