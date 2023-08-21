@@ -46,10 +46,10 @@ public:
     } while (transfers_running || task);
   }
   void run_looping(){
-    while(!stoped){
+    while(!stoped_){
       run();
       std::unique_lock lock{queue_mutex_};
-      wait_new_task_.wait(lock);
+      wait_new_task_.wait(lock,[this]{return stoped_.load();});
     }
   }
   void task_info(CURLM *handle) {
@@ -80,13 +80,19 @@ public:
     wait_new_task_.notify_one();
   }
 
+  void request_stop(){
+    // failed to notify?
+    stoped_ = true;
+    wait_new_task_.notify_one();
+  }
+
 private:
   CURLM *multi_handle_{};
 
   std::deque<std::function<void()>> function_queue_;
   std::deque<std::function<void()>> back_queue_;
   std::mutex queue_mutex_;
-  std::atomic_bool stoped{false};
+  std::atomic_bool stoped_{false};
   std::condition_variable wait_new_task_;
 
 };

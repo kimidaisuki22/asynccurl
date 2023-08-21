@@ -6,6 +6,7 @@
 #include "asynccurl/task.h"
 #include "asynccurl/write_buffer.h"
 #include <asynccurl/executor.h>
+#include <atomic>
 #include <barrier>
 #include <chrono>
 #include <coroutine>
@@ -107,6 +108,14 @@ int main() {
     requests.push_back(res);
     exec.add_handle(*res);
   }
+  std::atomic_bool stoped{};
+  std::thread input{[&] {
+    char ch{};
+    std::cin >> ch;
+    if (ch) {
+      stoped = true;
+    }
+  }};
   std::thread t{[&] {
     while (true) {
       std::barrier barrier{2};
@@ -114,12 +123,19 @@ int main() {
       tasks.set_on_finished([&barrier] { barrier.arrive_and_drop(); });
       asynccurl::spawn(exec, tasks);
       barrier.arrive_and_wait();
+      if(stoped){
+        exec.request_stop();
+        SPDLOG_INFO("request stoped");
+        break;
+      }
       std::this_thread::sleep_for(std::chrono::seconds{10});
     }
   }};
   SPDLOG_INFO("start run executor.");
 
   exec.run_looping();
+  input.join();
+  t.join();
 
   SPDLOG_INFO("async version: {}", async_stopwatch);
 
