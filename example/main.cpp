@@ -130,7 +130,7 @@ int main() {
         SPDLOG_INFO("request stoped");
         break;
       }
-      std::this_thread::sleep_for(std::chrono::seconds{10});
+      std::this_thread::sleep_for(std::chrono::seconds{3});
       SPDLOG_INFO("start looping {}",loop_count);
     }
   }};
