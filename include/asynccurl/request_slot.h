@@ -8,6 +8,7 @@ namespace asynccurl {
 class Request_slot : public Request {
 public:
   Request_slot(std::string url) : Request(url) {}
+  Request_slot(CURL *handle) : Request(handle) {}
 
   void on_finish(CURLcode result_code) override { finish_callback_(); }
   void set_on_finish_callback(std::function<void()> function) {

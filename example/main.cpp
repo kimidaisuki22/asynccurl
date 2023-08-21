@@ -17,23 +17,8 @@
 #include <string>
 #include <thread>
 #include <vector>
-#include <xutility>
 
-template <typename T> auto operator co_await(Task<T> &&task) {
-  struct Awaitable {
-    Awaitable(Task<T> t) : task_{std::move(t)} {}
-    Task<T> task_;
-    bool await_ready() const noexcept { return false; }
-    void await_suspend(std::coroutine_handle<> handle) {
-      task_.set_parent(handle);
-      task_.resume();
-      //   handle.resume();
-    }
 
-    T await_resume() noexcept { return task_.get_result(); }
-  };
-  return Awaitable{std::move(task)};
-}
 
 // Task<void> is_right() {
 //   SPDLOG_INFO("That's all right");

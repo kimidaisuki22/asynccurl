@@ -65,12 +65,12 @@ public:
         curl_easy_getinfo(easy_handle, CURLINFO_EFFECTIVE_URL, &url);
         asynccurl::Request *result;
         curl_easy_getinfo(easy_handle, CURLINFO_PRIVATE, &result);
-        if (result) {
-          result->on_finish(code);
-        }
         SPDLOG_DEBUG("request finished:[{}] {}", (void *)easy_handle, url);
 
         curl_multi_remove_handle(handle, easy_handle);
+        if (result) {
+          result->on_finish(code);
+        }
       }
     } while (info);
   }
