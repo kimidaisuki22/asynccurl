@@ -6,12 +6,17 @@
 #include "asynccurl/task.h"
 #include "asynccurl/write_buffer.h"
 #include <asynccurl/executor.h>
+#include <barrier>
+#include <chrono>
 #include <coroutine>
 #include <memory>
+#include <spdlog/common.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/stopwatch.h>
 #include <string>
+#include <thread>
 #include <vector>
+#include <xutility>
 
 template <typename T> auto operator co_await(Task<T> &&task) {
   struct Awaitable {
@@ -67,6 +72,7 @@ Task<std::vector<std::string>> fetch_lots(std::vector<std::string> urls,
   co_return results;
 }
 int main() {
+  spdlog::set_level(spdlog::level::debug);
   const std::string url = "https://www.bing.com";
   asynccurl::Request basic{url};
 
@@ -101,8 +107,20 @@ int main() {
     requests.push_back(res);
     exec.add_handle(*res);
   }
+  std::thread t{[&] {
+    while (true) {
+      std::barrier barrier{2};
+      auto tasks = fetch_lots(urls, exec);
+      tasks.set_on_finished([&barrier] { barrier.arrive_and_drop(); });
+      asynccurl::spawn(exec, tasks);
+      barrier.arrive_and_wait();
+      std::this_thread::sleep_for(std::chrono::seconds{10});
+    }
+  }};
   SPDLOG_INFO("start run executor.");
-  exec.run();
+
+  exec.run_looping();
+
   SPDLOG_INFO("async version: {}", async_stopwatch);
 
   SPDLOG_INFO("finished.");

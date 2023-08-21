@@ -4,6 +4,7 @@
 
 // with some modification.
 #include <coroutine>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <optional>
@@ -26,13 +27,17 @@ public:
   struct promise_type {
     Task<T> get_return_object() { return Task{Handle::from_promise(*this)}; }
     constexpr std::suspend_always initial_suspend() noexcept { return {}; }
-    Resume_parent final_suspend() noexcept { return {parent_}; }
+    Resume_parent final_suspend() noexcept {
+      on_finished_();
+      return {parent_};
+    }
 
     void return_value(T value) { result_value_ = std::move(value); }
 
     [[noreturn]] static void unhandled_exception() { throw; }
     std::coroutine_handle<> parent_{};
     T result_value_{};
+    std::function<void()> on_finished_{[] {}};
   };
 
   using Handle = std::coroutine_handle<promise_type>;
@@ -65,6 +70,9 @@ public:
     coroutine_.promise().parent_ = hd;
   }
   T get_result() { return coroutine_.promise().result_value_; }
+  void set_on_finished(std::function<void()> callback){
+    coroutine_.promise().on_finished_ = std::move(callback);
+  }
 
 private:
   Handle coroutine_{};

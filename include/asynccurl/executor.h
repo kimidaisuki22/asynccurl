@@ -1,5 +1,6 @@
 #pragma once
 #include "asynccurl/request.h"
+#include <atomic>
 #include <curl/curl.h>
 #include <curl/easy.h>
 #include <curl/multi.h>
@@ -24,7 +25,7 @@ public:
     int transfers_running{};
     int task;
     do {
-      curl_multi_wait(multi_handle_, NULL, 0, 1000, NULL);
+      curl_multi_wait(multi_handle_, NULL, 0, 100, NULL);
       curl_multi_perform(multi_handle_, &transfers_running);
       task_info(multi_handle_);
       task = {};
@@ -43,6 +44,13 @@ public:
       SPDLOG_DEBUG("running state transfer {} task {}", transfers_running,
                    task);
     } while (transfers_running || task);
+  }
+  void run_looping(){
+    while(!stoped){
+      run();
+      std::unique_lock lock{queue_mutex_};
+      wait_new_task_.wait(lock);
+    }
   }
   void task_info(CURLM *handle) {
     CURLMsg *info{};
@@ -69,6 +77,7 @@ public:
   void add_task(std::function<void()> task) {
     std::unique_lock lock{queue_mutex_};
     back_queue_.push_back(task);
+    wait_new_task_.notify_one();
   }
 
 private:
@@ -77,5 +86,8 @@ private:
   std::deque<std::function<void()>> function_queue_;
   std::deque<std::function<void()>> back_queue_;
   std::mutex queue_mutex_;
+  std::atomic_bool stoped{false};
+  std::condition_variable wait_new_task_;
+
 };
 } // namespace asynccurl
