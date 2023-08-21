@@ -45,11 +45,12 @@ public:
                    task);
     } while (transfers_running || task);
   }
-  void run_looping(){
-    while(!stoped_){
+  void run_looping() {
+    while (!stoped_) {
       run();
       std::unique_lock lock{queue_mutex_};
-      wait_new_task_.wait(lock,[this]{return stoped_.load();});
+      wait_new_task_.wait(
+          lock, [this] { return stoped_.load() || !back_queue_.empty(); });
     }
   }
   void task_info(CURLM *handle) {
@@ -75,13 +76,16 @@ public:
   }
 
   void add_task(std::function<void()> task) {
+    SPDLOG_DEBUG("adding new task to executor");
     std::unique_lock lock{queue_mutex_};
     back_queue_.push_back(task);
     wait_new_task_.notify_one();
+    SPDLOG_DEBUG("wake up send to executor");
   }
 
-  void request_stop(){
+  void request_stop() {
     // failed to notify?
+    SPDLOG_DEBUG("send stop to executor.");
     stoped_ = true;
     wait_new_task_.notify_one();
   }
@@ -94,6 +98,5 @@ private:
   std::mutex queue_mutex_;
   std::atomic_bool stoped_{false};
   std::condition_variable wait_new_task_;
-
 };
 } // namespace asynccurl
