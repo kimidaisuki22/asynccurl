@@ -9,15 +9,17 @@ message(STATUS "using ${CMAKE_CXX_COMPILER_ID}")
 # add_definitions(-DSPDLOG_ACTIVE_LEVEL=1)
 
 
-add_compile_options(-fsanitize=address)
-add_link_options(-fsanitize=address)
+# add_compile_options(-fsanitize=address)
+# add_link_options(-fsanitize=address)
 
 add_library(asynccurl)
 
 target_sources(asynccurl PRIVATE src/executor.cpp)
-target_sources(asynccurl PUBLIC include/asynccurl/executor.h)
 
-target_include_directories(asynccurl PUBLIC include)
+target_include_directories(asynccurl PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
 
 find_package(fmt CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
@@ -51,12 +53,32 @@ install(TARGETS asynccurl
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   )
 
-  set(CPACK_SOURCE_GENERATOR "TGZ;TZST;ZIP;7Z")
-  set(CPACK_SOURCE_IGNORE_FILES
-    "/.git/"
-    "/.gitignore$"
-    "/.cache/"
-    "/.vscode/"
-    "/build/"
-  )
+set(CPACK_GENERATOR "ZIP;TGZ;TZST")
+if(WIN32)
+list(APPEND CPACK_GENERATOR "NSIS")
+else()
+list(APPEND CPACK_GENERATOR "DEB")
+endif()
+set(CPACK_SOURCE_GENERATOR "TGZ;TZST;ZIP;7Z")
+set(CPACK_SOURCE_IGNORE_FILES
+  "/.git/"
+  "/.gitignore$"
+  "/.cache/"
+  "/.vscode/"
+  "/build/"
+)
 include(CPack)
+
+
+install(TARGETS asynccurl
+    EXPORT asynccurl
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION  ${CMAKE_INSTALL_BINDIR}
+)
+install(EXPORT asynccurl
+    FILE asynccurlConfig.cmake
+    NAMESPACE asynccurl::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/asynccurl
+)
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
